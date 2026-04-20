@@ -99,56 +99,64 @@ export const parseError = (
 
   // Axios-like errors
   if (errorObj.status || errorObj.code) {
-    const status = errorObj.status as number || errorObj.code as number;
+    const status = Number(errorObj.status ?? errorObj.code);
     const data = (errorObj.data as Record<string, unknown>) || errorObj;
+
+    // Extract the human-readable message — API may use 'error', 'message', or 'errors'
+    const extractMessage = (d: Record<string, unknown>): string | undefined => {
+      if (typeof d.message === 'string' && d.message) return d.message;
+      if (typeof d.error === 'string' && d.error) return d.error;
+      if (typeof d.errors === 'string' && d.errors) return d.errors;
+      return undefined;
+    };
 
     switch (status) {
       case 400:
         return {
-          message: (data.message as string) || 'Invalid request. Please check your input and try again.',
+          message: extractMessage(data) || 'Invalid request. Please check your input and try again.',
           statusCode: 400,
           type: 'validation',
         };
       case 401:
         return {
-          message:
-            (data.message as string) || 'Authentication failed. Please check your credentials and try again.',
+          message: extractMessage(data) ||
+            'Authentication failed. Please check your credentials and try again.',
           statusCode: 401,
           type: 'authentication',
         };
       case 403:
         return {
-          message: (data.message as string) || 'You do not have permission to perform this action.',
+          message: extractMessage(data) || 'You do not have permission to perform this action.',
           statusCode: 403,
           type: 'authorization',
         };
       case 404:
         return {
-          message: (data.message as string) || 'The requested resource was not found.',
+          message: extractMessage(data) || 'The requested resource was not found.',
           statusCode: 404,
           type: 'not_found',
         };
       case 409:
         return {
-          message: (data.message as string) || 'A conflict occurred. This resource may already exist.',
+          message: extractMessage(data) || 'A conflict occurred. This resource may already exist.',
           statusCode: 409,
           type: 'validation',
         };
       case 422:
         return {
-          message: (data.message as string) || 'Validation failed. Please check your input.',
+          message: extractMessage(data) || 'Validation failed. Please check your input.',
           statusCode: 422,
           type: 'validation',
         };
       case 429:
         return {
-          message: (data.message as string) || 'Too many requests. Please wait a moment and try again.',
+          message: extractMessage(data) || 'Too many requests. Please wait a moment and try again.',
           statusCode: 429,
           type: 'rate_limit',
         };
       case 500:
         return {
-          message: (data.message as string) || 'Internal server error. Please try again later.',
+          message: extractMessage(data) || 'Internal server error. Please try again later.',
           statusCode: 500,
           type: 'server',
         };
@@ -156,23 +164,35 @@ export const parseError = (
       case 503:
       case 504:
         return {
-          message: (data.message as string) || 'Service temporarily unavailable. Please try again later.',
+          message: extractMessage(data) || 'Service temporarily unavailable. Please try again later.',
           statusCode: status,
           type: 'server',
         };
       default:
         return {
-          message: (data.message as string) || `An error occurred (${status}). Please try again.`,
+          message: extractMessage(data) || `An error occurred. Please try again.`,
           statusCode: status,
           type: 'server',
         };
     }
   }
 
-  // Generic error with message
+  // Generic error with message — guard against raw JSON strings
   if (errorObj.message) {
+    const msg = errorObj.message as string;
+    // If the message looks like a raw JSON blob, don't show it directly
+    if (msg.startsWith('{') || msg.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(msg) as Record<string, unknown>;
+        const readable = (parsed.error as string) || (parsed.message as string) || (parsed.errors as string);
+        if (readable) return { message: readable, type: 'client' };
+      } catch {
+        // not valid JSON, fall through
+      }
+      return { message: 'An unexpected error occurred. Please try again.', type: 'client' };
+    }
     return {
-      message: errorObj.message as string,
+      message: msg,
       type: 'client',
     };
   }
@@ -186,12 +206,6 @@ export const parseError = (
   }
 
   // Fallback for unknown error types
-  return {
-    message: 'An unexpected error occurred',
-    type: 'unknown',
-  };
-
-  // Fallback
   return {
     message: 'An unexpected error occurred. Please try again.',
     type: 'unknown',

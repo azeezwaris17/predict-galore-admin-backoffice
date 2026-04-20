@@ -21,6 +21,7 @@ import {
   Select,
   MenuItem,
   FormControl,
+  Alert,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -54,6 +55,7 @@ function UserDetailPage() {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [editSuccessDialogOpen, setEditSuccessDialogOpen] = useState(false);
   const [deleteSuccessDialogOpen, setDeleteSuccessDialogOpen] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Initialize edited data when editing starts
   // Note: API only supports status updates, so we only track isActive changes
@@ -116,16 +118,14 @@ function UserDetailPage() {
       setEditSuccessDialogOpen(true);
     } catch (error: unknown) {
       console.error('Failed to update user:', error);
-      let errorMessage = 'Failed to update user. Please check the console for details.';
-      if (error && typeof error === 'object') {
-        if ('data' in error && error.data && typeof error.data === 'object') {
-          const errorData = error.data as { message?: string; errors?: unknown };
-          errorMessage = errorData.message || JSON.stringify(errorData.errors) || errorMessage;
-        } else if ('message' in error) {
-          errorMessage = String(error.message);
-        }
-      }
-      alert(errorMessage);
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || errObj;
+      const msg =
+        (data.error as string) ||
+        (data.message as string) ||
+        (errObj.message as string) ||
+        'Failed to update user. Please try again.';
+      setActionError(msg);
       setSaveDialogOpen(false);
     }
   }, [editedData, user, updateUserStatus, userId, queryClient]);
@@ -150,6 +150,14 @@ function UserDetailPage() {
       setDeleteSuccessDialogOpen(true);
     } catch (error) {
       console.error('Failed to delete user:', error);
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || errObj;
+      const msg =
+        (data.error as string) ||
+        (data.message as string) ||
+        (errObj.message as string) ||
+        'Failed to delete user. Please try again.';
+      setActionError(msg);
       setDeleteDialogOpen(false);
     }
   }, [deleteUser, userId, queryClient]);
@@ -239,6 +247,12 @@ function UserDetailPage() {
         py: designTokens.spacing.xl,
       }}
     >
+      {actionError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setActionError(null)}>
+          {actionError}
+        </Alert>
+      )}
+
       {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 3 }}>
         <Link

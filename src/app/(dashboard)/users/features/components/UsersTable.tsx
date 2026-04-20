@@ -232,10 +232,6 @@ export const UsersTable = memo(function UsersTable({
   const statusOptions: UserStatus[] = ['active', 'inactive', 'suspended', 'pending'];
   const planOptions: SubscriptionPlan[] = ['free', 'basic', 'premium', 'enterprise'];
 
-  const handleViewDetails = useCallback((userId: string) => {
-    router.push(`/users/${userId}`);
-  }, [router]);
-
   const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>, user: User) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);

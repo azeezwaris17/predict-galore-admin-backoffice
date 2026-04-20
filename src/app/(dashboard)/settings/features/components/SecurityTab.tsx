@@ -113,9 +113,14 @@ export const SecurityTab: React.FC<TabComponentProps> = ({ showNotification }) =
     } catch (error: unknown) {
       let errorMessage = 'Failed to change password';
 
-      if (error && typeof error === 'object' && 'data' in error) {
-        const apiError = error as { data?: { message?: string } };
-        errorMessage = apiError.data?.message || errorMessage;
+      if (error && typeof error === 'object') {
+        const errObj = error as Record<string, unknown>;
+        const data = (errObj.data as Record<string, unknown>) || errObj;
+        errorMessage =
+          (data.error as string) ||
+          (data.message as string) ||
+          (errObj.message as string) ||
+          errorMessage;
       }
 
       setError(errorMessage);
@@ -136,7 +141,14 @@ export const SecurityTab: React.FC<TabComponentProps> = ({ showNotification }) =
         'success'
       );
     } catch (error: unknown) {
-      showNotification('Failed to update two-factor authentication', 'error');
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || errObj;
+      const msg =
+        (data.error as string) ||
+        (data.message as string) ||
+        (errObj.message as string) ||
+        'Failed to update two-factor authentication';
+      showNotification(msg, 'error');
       logger.error('Failed to update two-factor authentication', { error });
     }
   };

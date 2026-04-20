@@ -142,9 +142,14 @@ export const NotificationsTab: React.FC<TabComponentProps> = ({ showNotification
     } catch (error: unknown) {
       let errorMessage = 'Failed to update notifications';
 
-      if (error && typeof error === 'object' && 'data' in error) {
-        const apiError = error as { data?: { message?: string } };
-        errorMessage = apiError.data?.message || errorMessage;
+      if (error && typeof error === 'object') {
+        const errObj = error as Record<string, unknown>;
+        const data = (errObj.data as Record<string, unknown>) || errObj;
+        errorMessage =
+          (data.error as string) ||
+          (data.message as string) ||
+          (errObj.message as string) ||
+          errorMessage;
       }
 
       showNotification(errorMessage, 'error');

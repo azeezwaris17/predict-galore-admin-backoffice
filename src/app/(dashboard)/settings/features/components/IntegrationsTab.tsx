@@ -102,7 +102,10 @@ export const IntegrationsTab: React.FC<TabComponentProps> = ({ showNotification 
       setOpenDialog(false);
     } catch (error) {
       logger.error('Error updating integration', { error });
-      showNotification('Failed to update integration', 'error');
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || errObj;
+      const msg = (data.error as string) || (data.message as string) || (errObj.message as string) || 'Failed to update integration';
+      showNotification(msg, 'error');
     }
   };
 
@@ -118,7 +121,10 @@ export const IntegrationsTab: React.FC<TabComponentProps> = ({ showNotification 
       showNotification(`${integration.name} ${enabled ? 'enabled' : 'disabled'}!`, 'success');
     } catch (error) {
       logger.error('Error toggling integration', { integrationId: integration.id, enabled, error });
-      showNotification(`Failed to update ${integration.name}`, 'error');
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || errObj;
+      const msg = (data.error as string) || (data.message as string) || (errObj.message as string) || `Failed to update ${integration.name}`;
+      showNotification(msg, 'error');
     }
   };
 
@@ -210,6 +216,7 @@ export const IntegrationsTab: React.FC<TabComponentProps> = ({ showNotification 
                     <Switch
                       checked={integration.enabled}
                       onChange={(e) => handleIntegrationToggle(integration, e.target.checked)}
+                      color="success"
                     />
                   </Box>
 
@@ -223,7 +230,7 @@ export const IntegrationsTab: React.FC<TabComponentProps> = ({ showNotification 
                     <Chip
                       label={integration.status}
                       size="small"
-                      color={integration.status === 'connected' ? 'success' : 'warning'}
+                      color={integration.status?.toLowerCase() === 'active' || integration.status === 'connected' ? 'success' : 'warning'}
                       variant="outlined"
                     />
                     <Button

@@ -69,7 +69,15 @@ export class SettingsService {
     const response = await api.get<IntegrationsResponse>(
       API_CONFIG.endpoints.settings.integrations
     );
-    return response.data;
+    // API returns isEnabled/isConfigured — normalize to our Integration shape
+    return (response.data || []).map((item) => {
+      const raw = item as unknown as Record<string, unknown>;
+      return {
+        ...item,
+        enabled: (raw.enabled ?? raw.isEnabled ?? false) as boolean,
+        status: (raw.status as string) || (raw.isEnabled ? 'Active' : 'Inactive'),
+      };
+    });
   }
 
   static async updateIntegration(data: UpdateIntegrationData): Promise<Integration> {

@@ -13,10 +13,10 @@ import { People, Payment, TrendingUp } from '@mui/icons-material';
 import { TimeRange } from '@/shared/components/PageHeader';
 
 interface DashboardAnalyticsProps {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   timeRange: TimeRange; // kept for API compatibility, not used for fetching
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DashboardAnalytics = memo(function DashboardAnalytics(_props: DashboardAnalyticsProps) {
   // No date params — same query key as DashboardPageClient, TanStack Query deduplicates to one request
   const { data: summary, isLoading, error } = useDashboardSummary();

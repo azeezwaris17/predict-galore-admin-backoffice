@@ -141,7 +141,13 @@ export const ProfileTab: React.FC<TabComponentProps> = ({ showNotification }) =>
       setErrorMessage(null);
       refetch();
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to update profile';
+      const errObj = err as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || {};
+      const errorMsg =
+        (data.error as string) ||
+        (data.message as string) ||
+        (errObj.message as string) ||
+        'Failed to update profile. Please try again.';
       setErrorMessage(errorMsg);
     }
   };

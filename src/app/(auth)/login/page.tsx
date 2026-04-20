@@ -18,6 +18,7 @@ import Alert from '@mui/material/Alert';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { useLogin } from '@/features/auth';
+import { parseError } from '@/app/(auth)/features/components/ErrorMessage';
 
 function LoginPage() {
   const router = useRouter();
@@ -73,7 +74,7 @@ function LoginPage() {
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error.message || 'Invalid credentials'}
+              {parseError(error).message}
             </Alert>
           )}
 

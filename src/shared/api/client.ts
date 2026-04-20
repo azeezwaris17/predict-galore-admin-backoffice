@@ -82,7 +82,18 @@ class ApiClient {
         }
       }
 
-      const errorMessage = error.message || error.errors || JSON.stringify(error) || 'Request failed';
+      // Extract a clean human-readable message from the API error body.
+      // API may use 'error', 'message', or 'errors' fields.
+      const extractApiMessage = (body: Record<string, unknown>): string | null => {
+        if (typeof body.message === 'string' && body.message) return body.message;
+        if (typeof body.error === 'string' && body.error) return body.error;
+        if (typeof body.errors === 'string' && body.errors) return body.errors;
+        return null;
+      };
+
+      const errorMessage =
+        extractApiMessage(error) ||
+        `An error occurred. Please try again.`;
       const apiError = new Error(errorMessage) as Error & { status?: number; data?: unknown };
       apiError.status = response.status;
       apiError.data = error;

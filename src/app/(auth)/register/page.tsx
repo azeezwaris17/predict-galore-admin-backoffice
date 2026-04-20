@@ -138,7 +138,14 @@ function RegisterPage() {
     } catch (error: unknown) {
       logger.error('Registration failed', { error });
       setApiError(error as ApiError);
-      toast.error('Registration failed. Please try again.');
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || {};
+      const msg =
+        (data.error as string) ||
+        (data.message as string) ||
+        (errObj.message as string) ||
+        'Registration failed. Please try again.';
+      toast.error(msg);
     }
   }, [agreeToTerms, emailCheck, registerMutation, login, router]);
 

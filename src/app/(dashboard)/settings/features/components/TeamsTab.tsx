@@ -323,7 +323,10 @@ export const TeamsTab: React.FC<TabComponentProps> = ({ showNotification }) => {
       showNotification('Invitation sent successfully', 'success');
       refetch();
     } catch (error) {
-      showNotification('Failed to send invitation', 'error');
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || errObj;
+      const msg = (data.error as string) || (data.message as string) || (errObj.message as string) || 'Failed to send invitation';
+      showNotification(msg, 'error');
       logger.error('Invite error', { error });
     }
   };
@@ -336,7 +339,10 @@ export const TeamsTab: React.FC<TabComponentProps> = ({ showNotification }) => {
       showNotification('Role updated successfully', 'success');
       refetch();
     } catch (error) {
-      showNotification('Failed to update role', 'error');
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || errObj;
+      const msg = (data.error as string) || (data.message as string) || (errObj.message as string) || 'Failed to update role';
+      showNotification(msg, 'error');
       logger.error('Update role error', { error });
     }
   };
@@ -349,7 +355,10 @@ export const TeamsTab: React.FC<TabComponentProps> = ({ showNotification }) => {
       showNotification('Member removed successfully', 'success');
       refetch();
     } catch (error) {
-      showNotification('Failed to remove member', 'error');
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || errObj;
+      const msg = (data.error as string) || (data.message as string) || (errObj.message as string) || 'Failed to remove member';
+      showNotification(msg, 'error');
       logger.error('Remove member error', { error });
     }
   };

@@ -6,7 +6,7 @@
 
 import { useCallback, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Box, Paper, Typography, Button, Stack, Chip, Divider, CircularProgress } from '@mui/material';
+import { Box, Paper, Typography, Button, Stack, Chip, Divider, CircularProgress, Alert } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -26,6 +26,7 @@ export default function MarketDetailPage() {
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSuccessDialogOpen, setDeleteSuccessDialogOpen] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const handleBack = useCallback(() => {
     router.push('/predictions/markets');
@@ -48,6 +49,14 @@ export default function MarketDetailPage() {
       setDeleteSuccessDialogOpen(true);
     } catch (error) {
       console.error('Failed to delete market:', error);
+      const errObj = error as Record<string, unknown>;
+      const data = (errObj.data as Record<string, unknown>) || {};
+      const msg =
+        (data.error as string) ||
+        (data.message as string) ||
+        (errObj.message as string) ||
+        'Failed to delete market. Please try again.';
+      setActionError(msg);
     }
   }, [deleteMarket, marketId, queryClient]);
 
@@ -80,6 +89,11 @@ export default function MarketDetailPage() {
 
   return (
     <Box sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 }, py: 3 }}>
+      {actionError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setActionError(null)}>
+          {actionError}
+        </Alert>
+      )}
       {/* Back Button */}
       <Button 
         startIcon={<ArrowBackIcon />} 
