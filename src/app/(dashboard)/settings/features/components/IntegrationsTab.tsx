@@ -268,7 +268,7 @@ export const IntegrationsTab: React.FC<TabComponentProps> = ({ showNotification 
               style={{ marginBottom: 8, borderRadius: '4px' }}
             />
           )}
-          <Typography variant="h4">{selectedIntegration?.name} Integration</Typography>
+          <Typography variant="h6" component="p">{selectedIntegration?.name} Integration</Typography>
           <Typography variant="body2" color="text.secondary">
             {selectedIntegration?.description}
           </Typography>
